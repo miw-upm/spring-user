@@ -50,22 +50,23 @@ public class AuthorizationServerConfig {
 
     @Bean
     public RegisteredClientRepository registeredClientRepository() {
-        // Ejemplo con un cliente "in-memory"
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        String hashedSecret = passwordEncoder.encode("my-secret");
-        RegisteredClient client = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId("my-client")
-                .clientSecret(hashedSecret) // Usa BCrypt en producción
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+        String adminSecret = passwordEncoder.encode("admin-secret");
+        RegisteredClient adminClient = RegisteredClient.withId(UUID.randomUUID().toString())
+                .clientId("admin-client")
+                .clientSecret(adminSecret)
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                .redirectUri("http://127.0.0.1:8080/login/oauth2/code/my-client")
-                .scope("ADMIN")
+                .scope("admin")
                 .clientSettings(ClientSettings.builder().requireAuthorizationConsent(false).build())
                 .build();
 
-        return new InMemoryRegisteredClientRepository(client);
+        return new InMemoryRegisteredClientRepository(adminClient);
     }
+    // $clientId = "admin-client"  $clientSecret = "admin-secret" $tokenUrl = "http://localhost:8080/oauth2/token"
+    // $authHeader = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$clientId`:$clientSecret"))
+    // $accessToken = $response.access_token
+    // $apiUrl = "http://localhost:8080/users"
+    // Invoke-RestMethod -Uri $apiUrl -Method Get -Headers @{"Authorization" = "Bearer $accessToken"}
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() {

@@ -60,7 +60,7 @@ public class UserResource {
         return this.userService.findByMobileAssured(mobile);
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_admin')")
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping
     public Stream<User> readAll() {
