@@ -10,6 +10,11 @@ spring:
     default-property-inclusion: NON_NULL
   jpa:
     open-in-view: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080
 
 info:
   app:
@@ -35,3 +40,4 @@ miw:
   jwt:
     expire: 36000
     issuer: es-upm-upm
+

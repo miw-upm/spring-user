@@ -14,3 +14,9 @@ spring:
 miw:
   jwt:
     secret: secret to dev
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG

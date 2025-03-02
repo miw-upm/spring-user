@@ -6,11 +6,10 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
@@ -34,29 +33,35 @@ public class AuthorizationServerConfig {
     @Bean
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
 
-        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = OAuth2AuthorizationServerConfigurer.authorizationServer();
+        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
+                OAuth2AuthorizationServerConfigurer.authorizationServer();
+        // Habilitar OIDC: expone endpoints como .well-known/openid-configuration, /userinfo, etc.
+        authorizationServerConfigurer.oidc(Customizer.withDefaults());
+        // Determina las rutas que usará este configurador (por ejemplo, /oauth2/token, /oauth2/authorize)
         RequestMatcher endpointsMatcher = authorizationServerConfigurer.getEndpointsMatcher();
         http
                 .securityMatcher(endpointsMatcher)
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
                 .csrf(csrf -> csrf.ignoringRequestMatchers(endpointsMatcher))
-                .with(authorizationServerConfigurer, Customizer.withDefaults());
+                .with(authorizationServerConfigurer, Customizer.withDefaults())
+                .formLogin(Customizer.withDefaults());
         return http.build();
     }
 
     @Bean
     public RegisteredClientRepository registeredClientRepository() {
         // Ejemplo con un cliente "in-memory"
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String hashedSecret = passwordEncoder.encode("my-secret");
         RegisteredClient client = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("my-client")
-                .clientSecret("{noop}my-secret") // Usa BCrypt en producción
+                .clientSecret(hashedSecret) // Usa BCrypt en producción
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 .redirectUri("http://127.0.0.1:8080/login/oauth2/code/my-client")
-                .scope("openid") // Activar OIDC
-                .scope("profile")
-                .scope("email")
-                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
+                .scope("ADMIN")
+                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(false).build())
                 .build();
 
         return new InMemoryRegisteredClientRepository(client);
@@ -89,7 +94,10 @@ public class AuthorizationServerConfig {
     @Bean
     public AuthorizationServerSettings authorizationServerSettings() {
         // Usa valores por defecto; se puede personalizar con .issuer("...")
-        return AuthorizationServerSettings.builder().build();
+        return AuthorizationServerSettings.builder()
+                .issuer("http://localhost:8080")
+                .build();
     }
+
 }
 

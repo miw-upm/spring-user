@@ -1,7 +1,7 @@
 name: CD - GitHub Docker Packages
 on:
   push:
-    branches: ['master']
+    branches: [ 'master' ]
 
 env:
   REPOSITORY: ${{ github.repository }} # <user>/<repo>
