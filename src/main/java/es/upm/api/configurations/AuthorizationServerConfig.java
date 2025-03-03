@@ -4,10 +4,12 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -30,6 +32,13 @@ import java.util.UUID;
 @Configuration
 public class AuthorizationServerConfig {
 
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public AuthorizationServerConfig(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
+
     @Bean
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
 
@@ -40,21 +49,19 @@ public class AuthorizationServerConfig {
         // Determina las rutas que usará este configurador (por ejemplo, /oauth2/token, /oauth2/authorize)
         RequestMatcher endpointsMatcher = authorizationServerConfigurer.getEndpointsMatcher();
         http
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
                 .securityMatcher(endpointsMatcher)
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
-                .csrf(csrf -> csrf.ignoringRequestMatchers(endpointsMatcher))
-                .with(authorizationServerConfigurer, Customizer.withDefaults())
-                .formLogin(Customizer.withDefaults());
+                .with(authorizationServerConfigurer, Customizer.withDefaults());
         return http.build();
     }
 
     @Bean
     public RegisteredClientRepository registeredClientRepository() {
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        String adminSecret = passwordEncoder.encode("admin-secret");
         RegisteredClient adminClient = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId("admin-client")
-                .clientSecret(adminSecret)
+                .clientId("shared-client")
+                .clientSecret(passwordEncoder.encode("client-secret"))
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 .scope("admin")
                 .clientSettings(ClientSettings.builder().requireAuthorizationConsent(false).build())
@@ -62,8 +69,12 @@ public class AuthorizationServerConfig {
 
         return new InMemoryRegisteredClientRepository(adminClient);
     }
-    // $clientId = "admin-client"  $clientSecret = "admin-secret" $tokenUrl = "http://localhost:8080/oauth2/token"
+    // $clientId = "shared-client"  $clientSecret = "client-secret" $tokenUrl = "http://localhost:8080/oauth2/token"
     // $authHeader = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$clientId`:$clientSecret"))
+    //  $response = Invoke-RestMethod -Uri $tokenUrl -Method Post -Headers @{
+    //>>     "Authorization" = "Basic $authHeader"
+    //>>     "Content-Type" = "application/x-www-form-urlencoded"
+    //>> } -Body "grant_type=client_credentials&scope=admin"
     // $accessToken = $response.access_token
     // $apiUrl = "http://localhost:8080/users"
     // Invoke-RestMethod -Uri $apiUrl -Method Get -Headers @{"Authorization" = "Bearer $accessToken"}
