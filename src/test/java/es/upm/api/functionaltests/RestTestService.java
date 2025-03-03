@@ -40,7 +40,6 @@ public class RestTestService {
 
         return Objects.requireNonNull(restTemplate.postForEntity(tokenUrl, request, Map.class).getBody())
                 .get("access_token").toString();
-
     }
 
     public HttpEntity<Void> createHttpEntity(String scope) {
@@ -61,7 +60,6 @@ public class RestTestService {
         return new HttpEntity<>(headers);
     }
 
-
     public HttpEntity<Void> loginAdmin() {
         return this.createHttpEntity("admin");
     }
@@ -81,6 +79,5 @@ public class RestTestService {
     public HttpEntity<Void> loginCustomer() {
         return this.createHttpEntity("customer");
     }
-
 
 }

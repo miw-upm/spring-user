@@ -1,6 +1,5 @@
 package es.upm.api.data.daos;
 
-
 import es.upm.api.TestConfig;
 import es.upm.api.data.entities.Scope;
 import org.junit.jupiter.api.Test;
@@ -23,11 +22,11 @@ class UserDtoRepositoryIT {
     }
 
     @Test
-    void testFindByRoleIn() {
-        List<Scope> roles = List.of(ADMIN, MANAGER);
-        assertThat(this.userRepository.findByScopeIn(roles))
+    void testFindByScopeIn() {
+        List<Scope> scopes = List.of(ADMIN, MANAGER);
+        assertThat(this.userRepository.findByScopeIn(scopes))
                 .isNotEmpty()
-                .allMatch(user -> roles.contains(user.getScope()));
+                .allMatch(user -> scopes.contains(user.getScope()));
     }
 
     @Test

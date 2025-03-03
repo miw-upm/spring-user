@@ -1,6 +1,5 @@
 package es.upm.api.functionaltests;
 
-
 import es.upm.api.resources.SystemResource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,8 +33,7 @@ class SystemResourceFunctionalTest {
         ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(OK);
-        String body = response.getBody();
-        assertThat(body)
+        assertThat(response.getBody())
                 .isNotNull()
                 .startsWith("<svg");
     }
@@ -45,8 +43,7 @@ class SystemResourceFunctionalTest {
         ResponseEntity<String> response = restTemplate.getForEntity(this.baseUrl, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(OK);
-        String body = response.getBody();
-        assertThat(body)
+        assertThat(response.getBody())
                 .isNotNull()
                 .isNotEmpty();
     }
