@@ -42,7 +42,7 @@ public class ApiExceptionHandler {
     @ResponseBody
     public ErrorMessage noResourceFoundRequest(Exception exception) {
         return new ErrorMessage(new NotFoundException(
-                "Ruta no encontrada. Prueba con: **/actuator/info o **/swagger-ui.html o **/v3/api-docs"),
+                "Path no encontrado... **/actuator/info, **/swagger-ui.html, **/v3/api-docs, .well-known/openid-configuration"),
                 HttpStatus.NOT_FOUND.value());
     }
 
@@ -77,7 +77,6 @@ public class ApiExceptionHandler {
     public ErrorMessage conflict(Exception exception) {
         return new ErrorMessage(exception, HttpStatus.CONFLICT.value());
     }
-
 
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler({

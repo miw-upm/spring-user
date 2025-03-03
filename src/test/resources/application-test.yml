@@ -1,8 +1,15 @@
+server:
+  port: 8080
+
 # logging
 logging:
   level:
     es.upm: DEBUG
-    org.springframework.security: DEBUG
+    org:
+      springframework:
+        security: WARN
+        security.oauth2: WARN
+        security.oauth2.server.authorization: WARN
 
 # H2 Embedded
 spring:

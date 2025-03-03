@@ -1,4 +1,4 @@
-package es.upm.api.infrastructure.postgres.daos;
+package es.upm.api.data.daos;
 
 
 import es.upm.api.TestConfig;

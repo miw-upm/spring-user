@@ -17,8 +17,8 @@ miw:
   oauth2:
     client-id: client-id
     client-secret: client-secret
-    redirect-uri: http://localhost:${local.server.port}/login/oauth2/code/cliente-oidc
-    issuer: http://localhost:${local.server.port}
+    redirect-uri: http://localhost:8080/login/oauth2/code/cliente-oidc
+    issuer: http://localhost:8080
 
 logging:
   level:

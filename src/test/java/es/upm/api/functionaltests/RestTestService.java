@@ -1,38 +1,59 @@
 package es.upm.api.functionaltests;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
+import java.util.Objects;
 
 
 @Service
 public class RestTestService {
 
+    private final TestRestTemplate restTemplate = new TestRestTemplate();
+    @Value("${miw.oauth2.client-id}")
+    private String clientId;
+    @Value("${miw.oauth2.client-secret}")
+    private String clientSecret;
 
+    private String obtainAccessToken(String scope) {
+        String tokenUrl = "http://localhost:8080/oauth2/token";
 
-    public HttpEntity<Void> createHttpEntity(String token) {
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "client_credentials");
+        body.add("scope", scope);
+
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        String auth = clientId + ":" + clientSecret;
+        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
+        headers.add(HttpHeaders.AUTHORIZATION, "Basic " + encodedAuth);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+
+        return Objects.requireNonNull(restTemplate.postForEntity(tokenUrl, request, Map.class).getBody())
+                .get("access_token").toString();
+
+    }
+
+    public HttpEntity<Void> createHttpEntity(String scope) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + this.obtainAccessToken(scope));
         return new HttpEntity<>(headers);
     }
 
-    public <T> HttpEntity<T> createHttpEntity(T body, String token) {
+    public <T> HttpEntity<T> createHttpEntity(T body, String scope) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
+        headers.set("Authorization", "Bearer " + this.obtainAccessToken(scope));
         headers.setContentType(MediaType.APPLICATION_JSON);
         return new HttpEntity<>(body, headers);
-    }
-
-    public HttpEntity<Void> basicAuth(String user, String password) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth(user, password);
-        return new HttpEntity<>(headers);
     }
 
     public HttpEntity<Void> createHttpEntity() {
@@ -42,23 +63,23 @@ public class RestTestService {
 
 
     public HttpEntity<Void> loginAdmin() {
-        return this.createHttpEntity();
+        return this.createHttpEntity("admin");
     }
 
     public <T> HttpEntity<T> loginAdmin(T body) {
-        return this.createHttpEntity(body,"");
+        return this.createHttpEntity(body, "admin");
     }
 
     public HttpEntity<Void> loginManager() {
-        return this.createHttpEntity("");
+        return this.createHttpEntity("manager");
     }
 
     public HttpEntity<Void> loginOperator() {
-        return this.createHttpEntity("");
+        return this.createHttpEntity("operator");
     }
 
     public HttpEntity<Void> loginCustomer() {
-        return this.createHttpEntity("");
+        return this.createHttpEntity("customer");
     }
 
 
