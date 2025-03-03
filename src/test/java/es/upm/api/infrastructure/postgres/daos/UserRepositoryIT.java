@@ -2,13 +2,13 @@ package es.upm.api.infrastructure.postgres.daos;
 
 
 import es.upm.api.TestConfig;
-import es.upm.api.domain.model.Role;
+import es.upm.api.domain.model.Scope;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
-import static es.upm.api.domain.model.Role.*;
+import static es.upm.api.domain.model.Scope.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestConfig
@@ -24,10 +24,10 @@ class UserRepositoryIT {
 
     @Test
     void testFindByRoleIn() {
-        List<Role> roles = List.of(ADMIN, MANAGER);
-        assertThat(this.userRepository.findByRoleIn(roles))
+        List<Scope> roles = List.of(ADMIN, MANAGER);
+        assertThat(this.userRepository.findByScopeIn(roles))
                 .isNotEmpty()
-                .allMatch(user -> roles.contains(user.getRole()));
+                .allMatch(user -> roles.contains(user.getScope()));
     }
 
     @Test

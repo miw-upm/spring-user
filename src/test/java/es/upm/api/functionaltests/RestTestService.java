@@ -1,8 +1,6 @@
 package es.upm.api.functionaltests;
 
 
-import es.upm.api.domain.model.Role;
-import es.upm.api.domain.services.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -13,8 +11,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class RestTestService {
 
-    @Autowired
-    private JwtService jwtService;
 
     public HttpEntity<Void> createHttpEntity(String token) {
         HttpHeaders headers = new HttpHeaders();
@@ -42,23 +38,23 @@ public class RestTestService {
 
 
     public HttpEntity<Void> loginAdmin() {
-        return this.createHttpEntity(this.jwtService.createToken("daemon", "6", Role.ADMIN.toString()));
+        return this.createHttpEntity();
     }
 
     public <T> HttpEntity<T> loginAdmin(T body) {
-        return this.createHttpEntity(body, this.jwtService.createToken("daemon", "6", Role.ADMIN.toString()));
+        return this.createHttpEntity(body,"");
     }
 
     public HttpEntity<Void> loginManager() {
-        return this.createHttpEntity(this.jwtService.createToken("daemon", "666666001", Role.MANAGER.toString()));
+        return this.createHttpEntity("");
     }
 
     public HttpEntity<Void> loginOperator() {
-        return this.createHttpEntity(this.jwtService.createToken("daemon", "666666001", Role.OPERATOR.toString()));
+        return this.createHttpEntity("");
     }
 
     public HttpEntity<Void> loginCustomer() {
-        return this.createHttpEntity(this.jwtService.createToken("daemon", "66", Role.CUSTOMER.toString()));
+        return this.createHttpEntity("");
     }
 
 

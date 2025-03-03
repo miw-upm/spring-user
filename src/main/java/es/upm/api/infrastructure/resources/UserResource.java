@@ -1,19 +1,17 @@
 package es.upm.api.infrastructure.resources;
 
 
-import es.upm.api.domain.model.Role;
+import es.upm.api.domain.model.Scope;
 import es.upm.api.domain.model.User;
 import es.upm.api.domain.services.UserService;
 import es.upm.api.infrastructure.postgres.daos.UserRepository;
 import es.upm.api.infrastructure.postgres.entities.UserEntity;
-import es.upm.api.infrastructure.resources.dtos.TokenDto;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,15 +36,6 @@ public class UserResource {
         this.userRepository = userRepository;
     }
 
-    @SecurityRequirement(name = "basicAuth")
-    @PreAuthorize("authenticated")
-    @PostMapping(value = TOKEN)
-    public TokenDto login(@AuthenticationPrincipal org.springframework.security.core.userdetails.User activeUser) {
-        TokenDto token = new TokenDto(userService.login(activeUser.getUsername()));
-        log.debug(token::toString);
-        return token;
-    }
-
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     public void createUser(@Valid @RequestBody User creationUser) {
@@ -64,9 +53,7 @@ public class UserResource {
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping
     public Stream<User> readAll() {
-        System.out.println(">>>>>>> " + SecurityContextHolder.getContext().getAuthentication());
-        return this.userRepository.findAll().stream().map(UserEntity::toUser);
-        // return this.userService.readAll(this.extractRoleClaims()).map(User::ofMobileFirstName);
+       return this.userService.readAll(this.extractRoleClaims()).map(User::ofMobileFirstName);
     }
 
     @SecurityRequirement(name = "bearerAuth")
@@ -83,10 +70,10 @@ public class UserResource {
         ).map(User::ofMobileFirstName);
     }
 
-    private Role extractRoleClaims() {
+    private Scope extractRoleClaims() {
         List<String> roleClaims = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).toList();
-        return Role.of(roleClaims.getFirst());
+        return Scope.of(roleClaims.getFirst());
     }
 
 }

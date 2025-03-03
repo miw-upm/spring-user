@@ -1,6 +1,6 @@
 package es.upm.api.infrastructure.postgres.persistence;
 
-import es.upm.api.domain.model.Role;
+import es.upm.api.domain.model.Scope;
 import es.upm.api.domain.model.User;
 import es.upm.api.domain.services.UserPersistence;
 import es.upm.api.infrastructure.postgres.daos.UserRepository;
@@ -30,7 +30,7 @@ public class UserPersistencePostgres implements UserPersistence {
 
     @Override
     public Stream<User> findByMobileAndFirstNameAndFamilyNameAndEmailAndDniContainingNullSafe
-            (String mobile, String firstName, String familyName, String email, String dni, List<Role> roles) {
+            (String mobile, String firstName, String familyName, String email, String dni, List<Scope> roles) {
         return this.userRepository.findByMobileAndFirstNameAndFamilyNameAndEmailAndDniContainingNullSafe
                         (mobile, firstName, familyName, email, dni, roles).stream()
                 .map(UserEntity::toUser);
@@ -42,8 +42,8 @@ public class UserPersistencePostgres implements UserPersistence {
     }
 
     @Override
-    public Stream<User> findByRoleIn(List<Role> roles) {
-        return this.userRepository.findByRoleIn(roles).stream()
+    public Stream<User> findByScopeIn(List<Scope> roles) {
+        return this.userRepository.findByScopeIn(roles).stream()
                 .map(UserEntity::toUser);
     }
 }

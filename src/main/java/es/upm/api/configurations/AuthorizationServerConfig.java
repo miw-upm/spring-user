@@ -4,8 +4,9 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-import es.upm.api.domain.model.Role;
+import es.upm.api.domain.model.Scope;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -38,6 +39,14 @@ import java.util.UUID;
 public class AuthorizationServerConfig {
 
     private final PasswordEncoder passwordEncoder;
+    @Value("${miw.oauth2.client-id}")
+    private String clientId;
+    @Value("${miw.oauth2.client-secret}")
+    private String clientSecret;
+    @Value("${miw.oauth2.redirect-uri}")
+    private String redirectUri;
+    @Value("${miw.oauth2.issuer}")
+    private String issuer;
 
     @Autowired
     public AuthorizationServerConfig(PasswordEncoder passwordEncoder) {
@@ -68,16 +77,13 @@ public class AuthorizationServerConfig {
                 .build();
         RegisteredClient client =
                 RegisteredClient.withId(UUID.randomUUID().toString())
-                        .clientId("client")
-                        .clientSecret(passwordEncoder.encode("client-secret"))
+                        .clientId(clientId)
+                        .clientSecret(passwordEncoder.encode(clientSecret))
                         .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                         .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                         .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                        .redirectUri("http://localhost:8080/login/oauth2/code/cliente-oidc")
-                        .scope("admin")
-                        .scope("manager")
-                        .scope("operator")
-                        .scope("customer")
+                        .redirectUri(redirectUri)
+                        .scopes(scopes -> scopes.addAll(Scope.allValues()))
                         .tokenSettings(tokenSettings)
                         .build();
 
@@ -85,11 +91,11 @@ public class AuthorizationServerConfig {
     }
 
     // Flujo de funcionamiento
-    //1º : Se accede a la ruta: http://localhost:8080/oauth2/authorize?response_type=code&client_id=client
+    //1º : Se accede a la ruta: http://localhost:8080/oauth2/authorize?response_type=code&client_id=client-id
     //2º se redirige a la ruta programada en el client con el code
     //3º Con el code, se solicita un token de acceso
-    // $clientId = "client" & $clientSecret = "client-secret" & $authHeader = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$clientId`:$clientSecret"))
-    // $code = "BjCaMqVDZNhuguw5fHAz0MUJKzScK3NRa_vNYvV_WMOpotx4G10OKAHBCJsGLV6_9OTxNXNO-fsAsbwmWZqfrNC218IKMICeDUoWTnvNaZybU0AH81LLFX3_wmr9xUds"
+    // $clientId = "client-id" & $clientSecret = "client-secret" & $authHeader = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$clientId`:$clientSecret"))
+    // $code = "DeSB9MDfBuDRlWEGaNrvtELC8XleART_z2E0sCSu10jEZNMzn_Aa-AEhr9ox5yY-3ZTBY0DlqaFxvgu8p3bPVr_P3AyRzw5TQRX2uj_TGwihAvnJPfur6ADl1E3Sls2x"
     // $response = Invoke-RestMethod -Uri $tokenUrl -Method Post -Headers @{ "Authorization" = "Basic $authHeader"
     // "Content-Type" = "application/x-www-form-urlencoded"
     // } -Body "grant_type=authorization_code&code=$code"
@@ -124,9 +130,8 @@ public class AuthorizationServerConfig {
 
     @Bean
     public AuthorizationServerSettings authorizationServerSettings() {
-        // Usa valores por defecto; se puede personalizar con .issuer("...")
         return AuthorizationServerSettings.builder()
-                .issuer("http://localhost:8080")
+                .issuer(issuer)
                 .build();
     }
 
@@ -137,7 +142,7 @@ public class AuthorizationServerConfig {
                 String scope = context.getPrincipal().getAuthorities().stream()
                         .findFirst()
                         .map(GrantedAuthority::getAuthority)
-                        .map(r -> r.substring(Role.PREFIX.length()).toLowerCase())
+                        .map(r -> r.substring(Scope.PREFIX.length()).toLowerCase())
                         .orElse("");
                 context.getClaims().claim("scope", scope);
             }

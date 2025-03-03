@@ -1,6 +1,6 @@
 package es.upm.api.infrastructure.postgres.daos;
 
-import es.upm.api.domain.model.Role;
+import es.upm.api.domain.model.Scope;
 import es.upm.api.infrastructure.postgres.entities.UserEntity;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +27,10 @@ public class DatabaseStarting {
     }
 
     public void initialize() {
-        if (this.userRepository.findByRoleIn(List.of(Role.ADMIN)).isEmpty()) {
+        if (this.userRepository.findByScopeIn(List.of(Scope.ADMIN)).isEmpty()) {
             UserEntity user = UserEntity.builder().mobile(MOBILE).firstName(SUPER_USER)
                     .password(new BCryptPasswordEncoder().encode(PASSWORD))
-                    .role(Role.ADMIN).registrationDate(LocalDateTime.now()).active(true).build();
+                    .scope(Scope.ADMIN).registrationDate(LocalDateTime.now()).active(true).build();
             this.userRepository.save(user);
             log.warn("------- Created Admin -----------");
         }

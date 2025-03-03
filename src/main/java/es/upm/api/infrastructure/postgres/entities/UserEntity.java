@@ -1,6 +1,6 @@
 package es.upm.api.infrastructure.postgres.entities;
 
-import es.upm.api.domain.model.Role;
+import es.upm.api.domain.model.Scope;
 import es.upm.api.domain.model.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -30,7 +30,7 @@ public class UserEntity {
     private String address;
     private String password;
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Scope scope;
     private LocalDateTime registrationDate;
     private Boolean active;
 

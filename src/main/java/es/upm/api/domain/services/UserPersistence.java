@@ -1,6 +1,6 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.model.Role;
+import es.upm.api.domain.model.Scope;
 import es.upm.api.domain.model.User;
 import org.springframework.stereotype.Repository;
 
@@ -13,10 +13,10 @@ public interface UserPersistence {
     Optional<User> readByMobile(String mobile);
 
     Stream<User> findByMobileAndFirstNameAndFamilyNameAndEmailAndDniContainingNullSafe
-            (String mobile, String firstName, String familyName, String email, String dni, List<Role> roles);
+            (String mobile, String firstName, String familyName, String email, String dni, List<Scope> roles);
 
     void create(User user);
 
-    Stream<User> findByRoleIn(List<Role> roles);
+    Stream<User> findByScopeIn(List<Scope> roles);
 }
 

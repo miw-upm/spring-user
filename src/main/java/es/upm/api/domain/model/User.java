@@ -30,7 +30,7 @@ public class User {
     private String dni;
     private String address;
     private String password;
-    private Role role;
+    private Scope scope;
     private LocalDateTime registrationDate;
     private Boolean active;
 
@@ -38,8 +38,8 @@ public class User {
         if (Objects.isNull(password)) {
             password = UUID.randomUUID().toString();
         }
-        if (Objects.isNull(role)) {
-            this.role = Role.CUSTOMER;
+        if (Objects.isNull(scope)) {
+            this.scope = Scope.CUSTOMER;
         }
         if (Objects.isNull(active)) {
             this.active = true;
