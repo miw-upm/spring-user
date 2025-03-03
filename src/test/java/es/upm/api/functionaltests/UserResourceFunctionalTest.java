@@ -18,7 +18,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Map;
 
 import static es.upm.api.resources.UserResource.*;
@@ -54,21 +56,32 @@ class UserResourceFunctionalTest {
 
 
     private String obtainAccessToken(String username, String password) {
+        // Construir la URL del endpoint de tokens
         String tokenUrl = "http://localhost:" + port + "/oauth2/token";
+
+// Crear el cuerpo de la petición sin incluir client_id ni client_secret
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "password");
-        params.add("username", username);
-        params.add("password", password);
-        params.add("client_id", clientId);
-        params.add("client_secret", clientSecret);
-        params.add("scope", "admin manager operator customer");
 
+
+// Crear los encabezados y establecer Content-Type
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+// Construir el header de Autorización con Basic Auth
+        String auth = clientId + ":" + clientSecret;
+        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
+        headers.add(HttpHeaders.AUTHORIZATION, "Basic " + encodedAuth);
+
+// Crear la entidad HTTP combinando cuerpo y cabeceras
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+// Enviar la solicitud POST al endpoint de token
         ResponseEntity<Map> response;
-        System.out.println(">>>>"+tokenUrl);
-        System.out.println(">>>>"+AuthorizationGrantType.PASSWORD.getValue());
+
 
         try {
-            response = restTemplate.postForEntity(tokenUrl, new HttpEntity<>(params), Map.class);
+            response = restTemplate.postForEntity(tokenUrl, request, Map.class);
         } catch (HttpClientErrorException e) {
             System.err.println("❌ Error al obtener el token: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
             throw new RuntimeException("Error en la autenticación: " + e.getMessage());
