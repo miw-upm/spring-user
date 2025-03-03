@@ -1,7 +1,7 @@
 package es.upm.api.configurations;
 
-import es.upm.api.domain.model.User;
-import es.upm.api.domain.services.UserPersistence;
+import es.upm.api.data.daos.UserRepository;
+import es.upm.api.data.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,18 +26,18 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class WebSecurityConfig {
 
-    private final UserPersistence userPersistence;
+    private final UserRepository userRepository;
 
     @Autowired
-    public WebSecurityConfig(UserPersistence userPersistence) {
-        this.userPersistence = userPersistence;
+    public WebSecurityConfig(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
         return mobile -> {
-            User user = userPersistence.readByMobile(mobile)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found: " + mobile));
+            User user = userRepository.findByMobile(mobile)
+                    .orElseThrow(() -> new UsernameNotFoundException("UserDto not found: " + mobile));
             return org.springframework.security.core.userdetails.User.builder()
                     .username(user.getMobile())
                     .password(user.getPassword())
