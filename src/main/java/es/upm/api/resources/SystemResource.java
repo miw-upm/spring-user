@@ -20,11 +20,12 @@ public class SystemResource {
 
     @GetMapping
     public String applicationInfo() {
-        String appInfo = "{\"version\":\"" + this.artifact + "::" + this.version + "::" + this.build + "\"} <br> <br>";
-        appInfo += "/version-badge <br><br>";
-        appInfo += "/actuator/info <br> /actuator/health <br><br>";
-        appInfo += "/swagger-ui.html  <br> /v3/api-docs <br>";
-        return appInfo;
+        return """
+                {"version":"%s::%s::%s"} <br><br>
+                /version-badge <br><br>
+                /actuator/info <br> /actuator/health <br><br>
+                /swagger-ui.html  <br> /v3/api-docs <br>
+                """.formatted(this.artifact, this.version, this.build);
     }
 
     @GetMapping(value = VERSION_BADGE, produces = {"image/svg+xml"})

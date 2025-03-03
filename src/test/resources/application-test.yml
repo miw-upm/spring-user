@@ -5,11 +5,8 @@ server:
 logging:
   level:
     es.upm: DEBUG
-    org:
-      springframework:
-        security: WARN
-        security.oauth2: WARN
-        security.oauth2.server.authorization: WARN
+    org.springframework.security: WARN
+
 
 # H2 Embedded
 spring:
@@ -18,8 +15,6 @@ spring:
     url: jdbc:h2:mem:testdb
 
 miw:
-  jwt:
-    secret: jwt-secret
   oauth2:
     client-id: client-id
     client-secret: client-secret

@@ -62,13 +62,13 @@ public class AuthorizationServerConfig {
                 OAuth2AuthorizationServerConfigurer.authorizationServer();
         // Habilitar OIDC: expone endpoints como .well-known/openid-configuration, /userinfo, etc.
         authorizationServerConfigurer.oidc(Customizer.withDefaults());
-        http
+        return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(Customizer.withDefaults())
                 .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
-                .with(authorizationServerConfigurer, Customizer.withDefaults());
-        return http.build();
+                .with(authorizationServerConfigurer, Customizer.withDefaults())
+                .build();
     }
 
     @Bean
@@ -121,7 +121,6 @@ public class AuthorizationServerConfig {
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
             RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
             RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-
             return new RSAKey.Builder(publicKey)
                     .privateKey(privateKey)
                     .keyID(UUID.randomUUID().toString())

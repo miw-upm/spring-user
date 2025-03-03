@@ -63,7 +63,7 @@ public class UserService {
         ).stream();
     }
 
-    public User findByMobileAssured(String mobile) {
+    public User read(String mobile) {
         return this.userRepository.findByMobile(mobile)
                 .orElseThrow(() -> new NotFoundException("The mobile don't exist: " + mobile));
     }

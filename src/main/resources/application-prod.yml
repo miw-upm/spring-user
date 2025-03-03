@@ -10,7 +10,3 @@ spring:
     url: jdbc:postgresql://localhost:5432/betca
     username: postgres
     password: postgres
-
-miw:
-  jwt:
-    secret: secret to test

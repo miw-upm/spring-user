@@ -12,19 +12,11 @@ spring:
     password: postgres
 
 miw:
-  jwt:
-    secret: jwt-secret
   oauth2:
     client-id: client-id
     client-secret: client-secret
     redirect-uri: http://localhost:8080/login/oauth2/code/cliente-oidc
     issuer: http://localhost:8080
-
-logging:
-  level:
-    org:
-      springframework:
-        security: DEBUG
 
 springdoc:
   swagger-ui:

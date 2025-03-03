@@ -4,7 +4,6 @@ package es.upm.api.resources;
 import es.upm.api.data.entities.Scope;
 import es.upm.api.resources.view.UserDto;
 import es.upm.api.services.UserService;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,28 +32,24 @@ public class UserResource {
         this.userService = userService;
     }
 
-    @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     public void createUser(@Valid @RequestBody UserDto creationUserDto) {
         creationUserDto.doDefault();
         this.userService.createUser(creationUserDto.toUser(), this.extractRoleClaims());
     }
 
-    @SecurityRequirement(name = "bearerAuth")
     @GetMapping(MOBILE_ID)
     public UserDto readUser(@PathVariable String mobile) {
-        return new UserDto(this.userService.findByMobileAssured(mobile));
+        return new UserDto(this.userService.read(mobile));
     }
 
-    @SecurityRequirement(name = "bearerAuth")
+
     @GetMapping
     public Stream<UserDto> readAll() {
         return this.userService.readAll(this.extractRoleClaims())
                 .map(UserDto::new)
                 .map(UserDto::ofMobileFirstName);
     }
-
-    @SecurityRequirement(name = "bearerAuth")
 
     @GetMapping(value = SEARCH)
     public Stream<UserDto> findByMobileAndFirstNameAndFamilyNameAndEmailAndDniContainingNullSafe(

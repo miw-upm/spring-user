@@ -48,13 +48,12 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http
+        return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(Customizer.withDefaults())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
-                .authenticationProvider(authenticationProvider());
-
-        return http.build();
+                .authenticationProvider(authenticationProvider())
+                .build();
     }
 
     public AuthenticationProvider authenticationProvider() {

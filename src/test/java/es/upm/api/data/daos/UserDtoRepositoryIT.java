@@ -2,7 +2,6 @@ package es.upm.api.data.daos;
 
 
 import es.upm.api.TestConfig;
-import es.upm.api.data.daos.UserRepository;
 import es.upm.api.data.entities.Scope;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
