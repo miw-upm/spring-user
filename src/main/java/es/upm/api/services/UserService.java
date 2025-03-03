@@ -1,11 +1,11 @@
 package es.upm.api.services;
 
 import es.upm.api.data.daos.UserRepository;
+import es.upm.api.data.entities.Scope;
 import es.upm.api.data.entities.User;
 import es.upm.api.services.exceptions.ConflictException;
 import es.upm.api.services.exceptions.ForbiddenException;
 import es.upm.api.services.exceptions.NotFoundException;
-import es.upm.api.data.entities.Scope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;

@@ -18,8 +18,8 @@ public enum Scope {
         return Scope.valueOf(withPrefix.replace(Scope.PREFIX, "").toUpperCase());
     }
 
-    public String scopeValue(){
-        return PREFIX+this.name().toLowerCase();
+    public String scopeValue() {
+        return PREFIX + this.value();
     }
 
     public String value() {

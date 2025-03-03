@@ -1,15 +1,19 @@
 package es.upm.api.functionaltests;
 
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+import java.util.Map;
 
 
 @Service
 public class RestTestService {
+
 
 
     public HttpEntity<Void> createHttpEntity(String token) {

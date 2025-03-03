@@ -142,7 +142,8 @@ public class AuthorizationServerConfig {
                 String scope = context.getPrincipal().getAuthorities().stream()
                         .findFirst()
                         .map(GrantedAuthority::getAuthority)
-                        .map(r -> r.substring(Scope.PREFIX.length()).toLowerCase())
+                        .map(Scope::of)
+                        .map(Scope::value)
                         .orElse("");
                 context.getClaims().claim("scope", scope);
             }

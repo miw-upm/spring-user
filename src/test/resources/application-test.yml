@@ -2,6 +2,7 @@
 logging:
   level:
     es.upm: DEBUG
+    org.springframework.security: DEBUG
 
 # H2 Embedded
 spring:
@@ -11,4 +12,9 @@ spring:
 
 miw:
   jwt:
-    secret: secret to test
+    secret: jwt-secret
+  oauth2:
+    client-id: client-id
+    client-secret: client-secret
+    redirect-uri: http://localhost:8080/login/oauth2/code/cliente-oidc
+    issuer: http://localhost:8080

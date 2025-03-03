@@ -37,10 +37,11 @@ public class UserDto {
     private LocalDateTime registrationDate;
     private Boolean active;
 
-    public UserDto(User user){
+    public UserDto(User user) {
         BeanUtils.copyProperties(user, this);
         this.password = "********";
     }
+
     public void doDefault() {
         if (Objects.isNull(password)) {
             password = UUID.randomUUID().toString();

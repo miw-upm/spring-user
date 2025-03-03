@@ -49,9 +49,9 @@ public class UserResource {
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping
     public Stream<UserDto> readAll() {
-       return this.userService.readAll(this.extractRoleClaims())
-               .map(UserDto::new)
-               .map(UserDto::ofMobileFirstName);
+        return this.userService.readAll(this.extractRoleClaims())
+                .map(UserDto::new)
+                .map(UserDto::ofMobileFirstName);
     }
 
     @SecurityRequirement(name = "bearerAuth")
@@ -64,7 +64,7 @@ public class UserResource {
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String dni) {
         return this.userService.findByMobileAndFirstNameAndFamilyNameAndEmailAndDniContainingNullSafe(
-                mobile, firstName, familyName, email, dni, this.extractRoleClaims() )
+                        mobile, firstName, familyName, email, dni, this.extractRoleClaims())
                 .map(UserDto::new)
                 .map(UserDto::ofMobileFirstName);
     }
