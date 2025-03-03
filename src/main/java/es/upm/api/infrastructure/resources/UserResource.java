@@ -64,9 +64,9 @@ public class UserResource {
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping
     public Stream<User> readAll() {
-        System.out.println(">>>>>>> "+SecurityContextHolder.getContext().getAuthentication());
+        System.out.println(">>>>>>> " + SecurityContextHolder.getContext().getAuthentication());
         return this.userRepository.findAll().stream().map(UserEntity::toUser);
-       // return this.userService.readAll(this.extractRoleClaims()).map(User::ofMobileFirstName);
+        // return this.userService.readAll(this.extractRoleClaims()).map(User::ofMobileFirstName);
     }
 
     @SecurityRequirement(name = "bearerAuth")
