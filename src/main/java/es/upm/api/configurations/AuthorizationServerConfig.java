@@ -21,16 +21,17 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Duration;
 import java.util.UUID;
 
 @Configuration
@@ -50,12 +51,10 @@ public class AuthorizationServerConfig {
                 OAuth2AuthorizationServerConfigurer.authorizationServer();
         // Habilitar OIDC: expone endpoints como .well-known/openid-configuration, /userinfo, etc.
         authorizationServerConfigurer.oidc(Customizer.withDefaults());
-        // Determina las rutas que usará este configurador (por ejemplo, /oauth2/token, /oauth2/authorize)
-        RequestMatcher endpointsMatcher = authorizationServerConfigurer.getEndpointsMatcher();
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(Customizer.withDefaults())
-                .securityMatcher(endpointsMatcher)
+                .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
                 .with(authorizationServerConfigurer, Customizer.withDefaults());
         return http.build();
@@ -63,6 +62,10 @@ public class AuthorizationServerConfig {
 
     @Bean
     public RegisteredClientRepository registeredClientRepository() {
+        TokenSettings tokenSettings = TokenSettings.builder()
+                .accessTokenTimeToLive(Duration.ofMinutes(60))
+                .refreshTokenTimeToLive(Duration.ofDays(30))
+                .build();
         RegisteredClient client =
                 RegisteredClient.withId(UUID.randomUUID().toString())
                         .clientId("client")
@@ -75,35 +78,25 @@ public class AuthorizationServerConfig {
                         .scope("manager")
                         .scope("operator")
                         .scope("customer")
+                        .tokenSettings(tokenSettings)
                         .build();
 
         return new InMemoryRegisteredClientRepository(client);
     }
-    // $clientId = "shared-client"  $clientSecret = "client-secret" $tokenUrl = "http://localhost:8080/oauth2/token"
-    // $authHeader = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$clientId`:$clientSecret"))
-    //  $response = Invoke-RestMethod -Uri $tokenUrl -Method Post -Headers @{
-    //>>     "Authorization" = "Basic $authHeader"
-    //>>     "Content-Type" = "application/x-www-form-urlencoded"
-    //>> } -Body "grant_type=client_credentials&scope=admin"
-    // $accessToken = $response.access_token
-    // $apiUrl = "http://localhost:8080/users"
-    // Invoke-RestMethod -Uri $apiUrl -Method Get -Headers @{"Authorization" = "Bearer $accessToken"}
 
-    // # Define los parámetros
-    //$clientId = "client"
-    //$clientSecret = "client-secret"
-    //$code = "oDVavm9p0hBiGwnPOkm6C-bPY0cTtrYC_3ypEQUyYLO2Q7W2ql424L4fwGggnXM-R6z-bhQUuY11ijDakN3FBXUEs6rgmph97EbemQHSxZGJON4oD4yziqyXW0Bc-4RW"
-    //$redirectUri = "http://localhost:8080/login/oauth2/code/cliente-oidc"
-    //$authHeader = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$clientId`:$clientSecret"))
-    //# Realizar la petición POST para intercambiar el código por un token
-    //$response = Invoke-RestMethod -Uri "http://localhost:8080/oauth2/token" `
-    //    -Method Post `
-    //    -Headers @{ "Authorization" = "Basic $authHeader" } `
-    //    -ContentType "application/x-www-form-urlencoded" `
-    //    -Body "grant_type=authorization_code&code=$code&redirect_uri=$redirectUri"
-    //
-    //# Muestra la respuesta
-    //$response
+    // Flujo de funcionamiento
+    //1º : Se accede a la ruta: http://localhost:8080/oauth2/authorize?response_type=code&client_id=client
+    //2º se redirige a la ruta programada en el client con el code
+    //3º Con el code, se solicita un token de acceso
+    // $clientId = "client" & $clientSecret = "client-secret" & $authHeader = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$clientId`:$clientSecret"))
+    // $code = "BjCaMqVDZNhuguw5fHAz0MUJKzScK3NRa_vNYvV_WMOpotx4G10OKAHBCJsGLV6_9OTxNXNO-fsAsbwmWZqfrNC218IKMICeDUoWTnvNaZybU0AH81LLFX3_wmr9xUds"
+    // $response = Invoke-RestMethod -Uri $tokenUrl -Method Post -Headers @{ "Authorization" = "Basic $authHeader"
+    // "Content-Type" = "application/x-www-form-urlencoded"
+    // } -Body "grant_type=authorization_code&code=$code"
+    // $token = response.token
+    // 4º se invoca un recurso
+    // $apiUrl = http://localhost:8080/users
+    // Invoke-RestMethod -Uri $apiUrl -Method Get -Headers @{"Authorization" = "Bearer $token"}
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
@@ -137,26 +130,8 @@ public class AuthorizationServerConfig {
                 .build();
     }
 
-    // Personaliza el contenido del JWT para agregar los roles del usuario
-/*
-    public OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizerRoles() {
-        return context -> {
-            // Solo personalizamos los tokens de acceso
-            if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
-                Authentication principal = context.getPrincipal();
-                if (principal instanceof UsernamePasswordAuthenticationToken) {
-                    Collection<? extends GrantedAuthority> authorities = principal.getAuthorities();
-                    List<String> roles = authorities.stream()
-                            .map(GrantedAuthority::getAuthority)
-                            .toList();
-                    context.getClaims().claim("roles", roles);
-                }
-            }
-        };
-    }
-*/
     @Bean
-    public OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer() {
+    public OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizerRoleByScope() {
         return context -> {
             if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
                 String scope = context.getPrincipal().getAuthorities().stream()
