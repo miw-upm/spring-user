@@ -4,6 +4,8 @@ package es.upm.api.infrastructure.resources;
 import es.upm.api.domain.model.Role;
 import es.upm.api.domain.model.User;
 import es.upm.api.domain.services.UserService;
+import es.upm.api.infrastructure.postgres.daos.UserRepository;
+import es.upm.api.infrastructure.postgres.entities.UserEntity;
 import es.upm.api.infrastructure.resources.dtos.TokenDto;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -19,7 +21,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @Log4j2
-@PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('OPERATOR')")
+
 @RestController
 @RequestMapping(UserResource.USERS)
 public class UserResource {
@@ -28,10 +30,12 @@ public class UserResource {
     public static final String MOBILE_ID = "/{mobile}";
     public static final String SEARCH = "/search";
     private final UserService userService;
+    private final UserRepository userRepository;
 
     @Autowired
-    public UserResource(UserService userService) {
+    public UserResource(UserService userService, UserRepository userRepository) {
         this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     @SecurityRequirement(name = "basicAuth")
@@ -56,14 +60,17 @@ public class UserResource {
         return this.userService.findByMobileAssured(mobile);
     }
 
+    @PreAuthorize("hasAuthority('SCOPE_admin')")
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping
     public Stream<User> readAll() {
-        return this.userService.readAll(this.extractRoleClaims())
-                .map(User::ofMobileFirstName);
+        System.out.println(">>>>>>> " + SecurityContextHolder.getContext().getAuthentication());
+        return this.userRepository.findAll().stream().map(UserEntity::toUser);
+        // return this.userService.readAll(this.extractRoleClaims()).map(User::ofMobileFirstName);
     }
 
     @SecurityRequirement(name = "bearerAuth")
+
     @GetMapping(value = SEARCH)
     public Stream<User> findByMobileAndFirstNameAndFamilyNameAndEmailAndDniContainingNullSafe(
             @RequestParam(required = false) String mobile,

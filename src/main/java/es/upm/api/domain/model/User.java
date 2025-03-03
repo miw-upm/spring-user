@@ -1,6 +1,5 @@
 package es.upm.api.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import es.upm.api.domain.model.validations.Validations;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
