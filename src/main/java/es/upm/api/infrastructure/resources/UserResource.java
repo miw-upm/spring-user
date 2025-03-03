@@ -4,8 +4,6 @@ package es.upm.api.infrastructure.resources;
 import es.upm.api.domain.model.Scope;
 import es.upm.api.domain.model.User;
 import es.upm.api.domain.services.UserService;
-import es.upm.api.infrastructure.postgres.daos.UserRepository;
-import es.upm.api.infrastructure.postgres.entities.UserEntity;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
@@ -20,6 +18,7 @@ import java.util.stream.Stream;
 
 @Log4j2
 
+@PreAuthorize("hasAnyAuthority('SCOPE_admin', 'SCOPE_manager', 'SCOPE_operator')")
 @RestController
 @RequestMapping(UserResource.USERS)
 public class UserResource {
@@ -28,12 +27,10 @@ public class UserResource {
     public static final String MOBILE_ID = "/{mobile}";
     public static final String SEARCH = "/search";
     private final UserService userService;
-    private final UserRepository userRepository;
 
     @Autowired
-    public UserResource(UserService userService, UserRepository userRepository) {
+    public UserResource(UserService userService) {
         this.userService = userService;
-        this.userRepository = userRepository;
     }
 
     @SecurityRequirement(name = "bearerAuth")
@@ -49,7 +46,6 @@ public class UserResource {
         return this.userService.findByMobileAssured(mobile);
     }
 
-    @PreAuthorize("hasAuthority('SCOPE_admin')")
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping
     public Stream<User> readAll() {

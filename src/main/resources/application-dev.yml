@@ -25,3 +25,7 @@ logging:
     org:
       springframework:
         security: DEBUG
+
+springdoc:
+  swagger-ui:
+    oauth2RedirectUrl: http://localhost:8080/login/oauth2/code/cliente-oidc
