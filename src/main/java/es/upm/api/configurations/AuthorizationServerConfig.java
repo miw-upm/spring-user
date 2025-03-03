@@ -4,14 +4,13 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import es.upm.api.domain.model.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -32,15 +31,12 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
 
 @Configuration
 public class AuthorizationServerConfig {
 
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public AuthorizationServerConfig(PasswordEncoder passwordEncoder) {
@@ -142,7 +138,7 @@ public class AuthorizationServerConfig {
     }
 
     // Personaliza el contenido del JWT para agregar los roles del usuario
-
+/*
     public OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizerRoles() {
         return context -> {
             // Solo personalizamos los tokens de acceso
@@ -158,29 +154,17 @@ public class AuthorizationServerConfig {
             }
         };
     }
-
+*/
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer() {
         return context -> {
             if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
-                Authentication principal = context.getPrincipal();
-                Collection<? extends GrantedAuthority> authorities = principal.getAuthorities();
-                List<String> scopes = new ArrayList<>();
-
-                if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-                    scopes.add("admin");
-                }
-                if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"))) {
-                    scopes.add("manager");
-                }
-                if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_OPERATOR"))) {
-                    scopes.add("operator");
-                }
-                if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_CUSTOMER"))) {
-                    scopes.add("customer");
-                }
-                String scopeValue = String.join(" ", scopes);
-                context.getClaims().claim("scope", scopeValue);
+                String scope = context.getPrincipal().getAuthorities().stream()
+                        .findFirst()
+                        .map(GrantedAuthority::getAuthority)
+                        .map(r -> r.substring(Role.PREFIX.length()).toLowerCase())
+                        .orElse("");
+                context.getClaims().claim("scope", scope);
             }
         };
     }

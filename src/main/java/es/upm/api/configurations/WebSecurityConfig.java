@@ -37,7 +37,6 @@ public class WebSecurityConfig {
         return mobile -> {
             User user = userPersistence.readByMobile(mobile)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found: " + mobile));
-            System.out.println(">>>> validación de mobile: " + user);
             return org.springframework.security.core.userdetails.User.builder()
                     .username(user.getMobile())
                     .password(user.getPassword())

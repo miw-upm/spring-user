@@ -30,7 +30,7 @@ public class UserResource {
     public static final String MOBILE_ID = "/{mobile}";
     public static final String SEARCH = "/search";
     private final UserService userService;
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Autowired
     public UserResource(UserService userService, UserRepository userRepository) {
@@ -60,7 +60,7 @@ public class UserResource {
         return this.userService.findByMobileAssured(mobile);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('SCOPE_read')")
+    @PreAuthorize("hasAuthority('SCOPE_admin')")
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping
     public Stream<User> readAll() {
