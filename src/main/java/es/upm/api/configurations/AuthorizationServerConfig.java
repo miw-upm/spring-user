@@ -32,6 +32,7 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -74,8 +75,10 @@ public class AuthorizationServerConfig {
                         .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                         .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                         .redirectUri("http://localhost:8080/login/oauth2/code/cliente-oidc")
-                        .scope("read")
-                        .scope("write")
+                        .scope("admin")
+                        .scope("manager")
+                        .scope("operator")
+                        .scope("customer")
                         .build();
 
         return new InMemoryRegisteredClientRepository(client);
@@ -89,6 +92,22 @@ public class AuthorizationServerConfig {
     // $accessToken = $response.access_token
     // $apiUrl = "http://localhost:8080/users"
     // Invoke-RestMethod -Uri $apiUrl -Method Get -Headers @{"Authorization" = "Bearer $accessToken"}
+
+    // # Define los parámetros
+    //$clientId = "client"
+    //$clientSecret = "client-secret"
+    //$code = "oDVavm9p0hBiGwnPOkm6C-bPY0cTtrYC_3ypEQUyYLO2Q7W2ql424L4fwGggnXM-R6z-bhQUuY11ijDakN3FBXUEs6rgmph97EbemQHSxZGJON4oD4yziqyXW0Bc-4RW"
+    //$redirectUri = "http://localhost:8080/login/oauth2/code/cliente-oidc"
+    //$authHeader = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$clientId`:$clientSecret"))
+    //# Realizar la petición POST para intercambiar el código por un token
+    //$response = Invoke-RestMethod -Uri "http://localhost:8080/oauth2/token" `
+    //    -Method Post `
+    //    -Headers @{ "Authorization" = "Basic $authHeader" } `
+    //    -ContentType "application/x-www-form-urlencoded" `
+    //    -Body "grant_type=authorization_code&code=$code&redirect_uri=$redirectUri"
+    //
+    //# Muestra la respuesta
+    //$response
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
@@ -118,13 +137,13 @@ public class AuthorizationServerConfig {
     public AuthorizationServerSettings authorizationServerSettings() {
         // Usa valores por defecto; se puede personalizar con .issuer("...")
         return AuthorizationServerSettings.builder()
-                .issuer("http://localhost:9000")
+                .issuer("http://localhost:8080")
                 .build();
     }
 
     // Personaliza el contenido del JWT para agregar los roles del usuario
-    @Bean
-    public OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer() {
+
+    public OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizerRoles() {
         return context -> {
             // Solo personalizamos los tokens de acceso
             if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
@@ -136,6 +155,32 @@ public class AuthorizationServerConfig {
                             .toList();
                     context.getClaims().claim("roles", roles);
                 }
+            }
+        };
+    }
+
+    @Bean
+    public OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer() {
+        return context -> {
+            if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
+                Authentication principal = context.getPrincipal();
+                Collection<? extends GrantedAuthority> authorities = principal.getAuthorities();
+                List<String> scopes = new ArrayList<>();
+
+                if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                    scopes.add("admin");
+                }
+                if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"))) {
+                    scopes.add("manager");
+                }
+                if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_OPERATOR"))) {
+                    scopes.add("operator");
+                }
+                if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_CUSTOMER"))) {
+                    scopes.add("customer");
+                }
+                String scopeValue = String.join(" ", scopes);
+                context.getClaims().claim("scope", scopeValue);
             }
         };
     }
