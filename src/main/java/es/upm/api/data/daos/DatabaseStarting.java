@@ -4,6 +4,7 @@ import es.upm.api.data.entities.Scope;
 import es.upm.api.data.entities.User;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
 
@@ -14,22 +15,29 @@ import java.util.List;
 @Repository
 public class DatabaseStarting {
 
-    private static final String SUPER_USER = "admin";
-    private static final String MOBILE = "6";
-    private static final String PASSWORD = "6";
+    private final String admin;
+    private final String mobile;
+    private final String password;
 
     private final UserRepository userRepository;
 
     @Autowired
-    public DatabaseStarting(UserRepository userRepository) {
+    public DatabaseStarting(
+            UserRepository userRepository,
+            @Value("${miw.admin}") String admin,
+            @Value("${miw.mobile}") String mobile,
+            @Value("${miw.password}") String password) {
         this.userRepository = userRepository;
+        this.admin = admin;
+        this.mobile = mobile;
+        this.password = password;
         this.initialize();
     }
 
     public void initialize() {
         if (this.userRepository.findByScopeIn(List.of(Scope.ADMIN)).isEmpty()) {
-            User user = User.builder().mobile(MOBILE).firstName(SUPER_USER)
-                    .password(new BCryptPasswordEncoder().encode(PASSWORD))
+            User user = User.builder().mobile(this.mobile).firstName(this.admin)
+                    .password(new BCryptPasswordEncoder().encode(this.password))
                     .scope(Scope.ADMIN).registrationDate(LocalDateTime.now()).active(true).build();
             this.userRepository.save(user);
             log.warn("------- Created Admin -----------");

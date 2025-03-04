@@ -24,8 +24,8 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public void createUser(User user, Scope roleClaim) {
-        if (!authorizedRoles(roleClaim).contains(user.getScope())) {
+    public void createUser(User user, Scope scope) {
+        if (!authorizedScopes(scope).contains(user.getScope())) {
             throw new ForbiddenException("Insufficient role to create this userDto: " + user);
         }
         this.assertNoExistByMobile(user.getMobile());
@@ -34,16 +34,16 @@ public class UserService {
         this.userRepository.save(user);
     }
 
-    public Stream<User> readAll(Scope roleClaim) {
-        return this.userRepository.findByScopeIn(authorizedRoles(roleClaim)).stream();
+    public Stream<User> readAll(Scope scope) {
+        return this.userRepository.findByScopeIn(authorizedScopes(scope)).stream();
     }
 
-    private List<Scope> authorizedRoles(Scope roleClaim) {
-        if (Scope.ADMIN.equals(roleClaim)) {
+    private List<Scope> authorizedScopes(Scope scope) {
+        if (Scope.ADMIN.equals(scope)) {
             return List.of(Scope.ADMIN, Scope.MANAGER, Scope.OPERATOR, Scope.CUSTOMER);
-        } else if (Scope.MANAGER.equals(roleClaim)) {
+        } else if (Scope.MANAGER.equals(scope)) {
             return List.of(Scope.MANAGER, Scope.OPERATOR, Scope.CUSTOMER);
-        } else if (Scope.OPERATOR.equals(roleClaim)) {
+        } else if (Scope.OPERATOR.equals(scope)) {
             return List.of(Scope.CUSTOMER);
         } else {
             return List.of();
@@ -57,9 +57,9 @@ public class UserService {
     }
 
     public Stream<User> findByMobileAndFirstNameAndFamilyNameAndEmailAndDniContainingNullSafe(
-            String mobile, String firstName, String familyName, String email, String dni, Scope roleClaim) {
+            String mobile, String firstName, String familyName, String email, String dni, Scope scope) {
         return this.userRepository.findByMobileAndFirstNameAndFamilyNameAndEmailAndDniContainingNullSafe(
-                mobile, firstName, familyName, email, dni, this.authorizedRoles(roleClaim)
+                mobile, firstName, familyName, email, dni, this.authorizedScopes(scope)
         ).stream();
     }
 

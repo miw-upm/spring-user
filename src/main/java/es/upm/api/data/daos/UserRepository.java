@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByMobile(String mobile);
 
-    List<User> findByScopeIn(Collection<Scope> roles);
+    List<User> findByScopeIn(Collection<Scope> scopes);
 
     @Query("select u from User u where " +
             "(coalesce(?1, '') = '' or u.mobile like concat('%',?1,'%')) and " +
@@ -22,5 +22,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             "(coalesce(?5, '') = '' or lower(u.dni) like lower(concat('%',?5,'%'))) and" +
             "(u.scope in ?6)")
     List<User> findByMobileAndFirstNameAndFamilyNameAndEmailAndDniContainingNullSafe(
-            String mobile, String firstName, String familyName, String email, String dni, Collection<Scope> roles);
+            String mobile, String firstName, String familyName, String email, String dni, Collection<Scope> scopes);
 }

@@ -33,7 +33,7 @@ management:
       enabled: true
 
 miw:
-  jwt:
-    expire: 36000
-    issuer: es-upm-upm
+  admin: admin
+  mobile: 6
+  password: 6
 

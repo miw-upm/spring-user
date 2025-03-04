@@ -2,12 +2,12 @@
 services:
   app:
     build: .
-    container_name: spring-api-rest
+    container_name: spring-user
     restart: always
     ports:
       - "8080:8080"
     environment:
       # host.docker.internal: ruta al localhost de la máquina anfitriona
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/tpv
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/betca
 
 #> docker compose up --build -d

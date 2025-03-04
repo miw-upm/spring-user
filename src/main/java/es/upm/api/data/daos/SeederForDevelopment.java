@@ -4,6 +4,7 @@ import es.upm.api.data.entities.Scope;
 import es.upm.api.data.entities.User;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
@@ -14,15 +15,16 @@ import java.util.Arrays;
 @Log4j2
 @Repository
 @Profile({"dev", "test"})
-public class Seeder {
-
+public class SeederForDevelopment {
+    private final String pass;
     private final DatabaseStarting databaseStarting;
     private final UserRepository userRepository;
 
     @Autowired
-    public Seeder(UserRepository userRepository, DatabaseStarting databaseStarting) {
+    public SeederForDevelopment(UserRepository userRepository, DatabaseStarting databaseStarting, @Value("${miw.password}") String password) {
         this.userRepository = userRepository;
         this.databaseStarting = databaseStarting;
+        this.pass = new BCryptPasswordEncoder().encode(password);
         this.deleteAllAndInitializeAndSeedDataBase();
     }
 
@@ -39,8 +41,9 @@ public class Seeder {
 
     private void seedDataBase() {
         log.warn("------- Initial Load from JAVA -----------");
-        String pass = new BCryptPasswordEncoder().encode("6");
         User[] users = {
+                User.builder().mobile("66").firstName("customer").password(pass).scope(Scope.CUSTOMER)
+                        .registrationDate(LocalDateTime.now()).active(true).build(),
                 User.builder().mobile("666666000").firstName("adm").password(pass).dni(null).address("C/TPV, 0")
                         .email("adm@gmail.com").scope(Scope.ADMIN).registrationDate(LocalDateTime.now()).active(true)
                         .build(),
@@ -57,9 +60,7 @@ public class Seeder {
                         .address("C/TPV, 4").email("c2@gmail.com").scope(Scope.CUSTOMER)
                         .registrationDate(LocalDateTime.now()).active(true).build(),
                 User.builder().mobile("666666005").firstName("c3").password(pass).scope(Scope.CUSTOMER)
-                        .registrationDate(LocalDateTime.now()).active(true).build(),
-                User.builder().mobile("66").firstName("customer").password(pass).scope(Scope.CUSTOMER)
-                        .registrationDate(LocalDateTime.now()).active(true).build(),
+                        .registrationDate(LocalDateTime.now()).active(true).build()
         };
         this.userRepository.saveAll(Arrays.asList(users));
         log.warn("        ------- users");
