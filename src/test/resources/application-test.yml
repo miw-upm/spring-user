@@ -20,3 +20,5 @@ miw:
     client-secret: client-secret
     redirect-uri: http://localhost:8080/login/oauth2/code/cliente-oidc
     issuer: http://localhost:8080
+    api-client-id: api-client-id
+    api-client-secret: api-client-secret

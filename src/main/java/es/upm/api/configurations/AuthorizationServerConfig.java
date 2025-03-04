@@ -49,6 +49,10 @@ public class AuthorizationServerConfig {
     private String redirectUri;
     @Value("${miw.oauth2.issuer}")
     private String issuer;
+    @Value("${miw.oauth2.api-client-id}")
+    private String apiClientId;
+    @Value("${miw.oauth2.api-client-secret}")
+    private String apiClientSecret;
 
     @Autowired
     public AuthorizationServerConfig(PasswordEncoder passwordEncoder) {
@@ -77,20 +81,28 @@ public class AuthorizationServerConfig {
                 .accessTokenTimeToLive(Duration.ofMinutes(60))
                 .refreshTokenTimeToLive(Duration.ofDays(30))
                 .build();
-        RegisteredClient client =
+        RegisteredClient userClient =
                 RegisteredClient.withId(UUID.randomUUID().toString())
                         .clientId(clientId)
                         .clientSecret(passwordEncoder.encode(clientSecret))
                         .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                         .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                         .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                        .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                         .redirectUri(redirectUri)
                         .scopes(scopes -> scopes.addAll(Scope.allValues()))
                         .tokenSettings(tokenSettings)
                         .build();
+        RegisteredClient apiClient =
+                RegisteredClient.withId(UUID.randomUUID().toString())
+                        .clientId(apiClientId)
+                        .clientSecret(passwordEncoder.encode(apiClientSecret))
+                        .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                        .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                        .scopes(scopes -> scopes.addAll(Scope.allValues()))
+                        .tokenSettings(tokenSettings)
+                        .build();
 
-        return new InMemoryRegisteredClientRepository(client);
+        return new InMemoryRegisteredClientRepository(userClient,apiClient);
     }
 
     // Flujo de funcionamiento

@@ -18,11 +18,12 @@ import java.util.Objects;
 @Service
 public class RestTestService {
 
+    @Value("${miw.oauth2.api-client-id}")
+    private String apiClientId;
+    @Value("${miw.oauth2.api-client-secret}")
+    private String apiClientSecret;
+
     private final TestRestTemplate restTemplate = new TestRestTemplate();
-    @Value("${miw.oauth2.client-id}")
-    private String clientId;
-    @Value("${miw.oauth2.client-secret}")
-    private String clientSecret;
 
     private String obtainAccessToken(String scope) {
         String tokenUrl = "http://localhost:8080/oauth2/token";
@@ -33,7 +34,7 @@ public class RestTestService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        String auth = clientId + ":" + clientSecret;
+        String auth = apiClientId + ":" + apiClientSecret;
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
         headers.add(HttpHeaders.AUTHORIZATION, "Basic " + encodedAuth);
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
