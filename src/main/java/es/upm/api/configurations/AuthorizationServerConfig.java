@@ -41,22 +41,29 @@ import java.util.stream.Collectors;
 public class AuthorizationServerConfig {
 
     private final PasswordEncoder passwordEncoder;
-    @Value("${miw.oauth2.client-id}")
-    private String clientId;
-    @Value("${miw.oauth2.client-secret}")
-    private String clientSecret;
-    @Value("${miw.oauth2.redirect-uri}")
-    private String redirectUri;
-    @Value("${miw.oauth2.issuer}")
-    private String issuer;
-    @Value("${miw.oauth2.api-client-id}")
-    private String apiClientId;
-    @Value("${miw.oauth2.api-client-secret}")
-    private String apiClientSecret;
+    private final String clientId;
+    private final String clientSecret;
+    private final String redirectUri;
+    private final String issuer;
+    private final String apiClientId;
+    private final String apiClientSecret;
 
     @Autowired
-    public AuthorizationServerConfig(PasswordEncoder passwordEncoder) {
+    public AuthorizationServerConfig(
+            PasswordEncoder passwordEncoder,
+            @Value("${miw.oauth2.client-id}") String clientId,
+            @Value("${miw.oauth2.client-secret}") String clientSecret,
+            @Value("${miw.oauth2.redirect-uri}") String redirectUri,
+            @Value("${miw.oauth2.issuer}") String issuer,
+            @Value("${miw.oauth2.api-client-id}") String apiClientId,
+            @Value("${miw.oauth2.api-client-secret}") String apiClientSecret) {
         this.passwordEncoder = passwordEncoder;
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+        this.redirectUri = redirectUri;
+        this.issuer = issuer;
+        this.apiClientId = apiClientId;
+        this.apiClientSecret = apiClientSecret;
     }
 
     @Bean
@@ -64,8 +71,7 @@ public class AuthorizationServerConfig {
 
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
                 OAuth2AuthorizationServerConfigurer.authorizationServer();
-        // Habilitar OIDC: expone endpoints como .well-known/openid-configuration, /userinfo, etc.
-        authorizationServerConfigurer.oidc(Customizer.withDefaults());
+        authorizationServerConfigurer.oidc(Customizer.withDefaults()); //.well-known/openid-configuration
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(Customizer.withDefaults())
@@ -101,23 +107,18 @@ public class AuthorizationServerConfig {
                         .scopes(scopes -> scopes.addAll(Scope.allValues()))
                         .tokenSettings(tokenSettings)
                         .build();
-
         return new InMemoryRegisteredClientRepository(userClient,apiClient);
     }
 
-    // Flujo de funcionamiento
-    //1º : Se accede a la ruta: http://localhost:8080/oauth2/authorize?response_type=code&client_id=client-id
-    //2º se redirige a la ruta programada en el client con el code
-    //3º Con el code, se solicita un token de acceso
-    // $clientId = "client-id" & $clientSecret = "client-secret" & $authHeader = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$clientId`:$clientSecret"))
-    // $code = "DeSB9MDfBuDRlWEGaNrvtELC8XleART_z2E0sCSu10jEZNMzn_Aa-AEhr9ox5yY-3ZTBY0DlqaFxvgu8p3bPVr_P3AyRzw5TQRX2uj_TGwihAvnJPfur6ADl1E3Sls2x"
-    // $response = Invoke-RestMethod -Uri $tokenUrl -Method Post -Headers @{ "Authorization" = "Basic $authHeader"
-    // "Content-Type" = "application/x-www-form-urlencoded"
-    // } -Body "grant_type=authorization_code&code=$code"
-    // $token = response.token
-    // 4º se invoca un recurso
-    // $apiUrl = http://localhost:8080/users
-    // Invoke-RestMethod -Uri $apiUrl -Method Get -Headers @{"Authorization" = "Bearer $token"}
+    // AUTHORIZATION_CODE
+    // 1º- Se inicia: http://localhost:8080/oauth2/authorize?response_type=code&client_id=client-id
+    // 2º- Se redirige a la ruta programada, el usuario se logea y se redirije a la url programada
+    // http://localhost:8080/login/oauth2/code/cliente-oidc?code=4mnIudIk-YKKyFI3B6L6tztFAP7Xz90fqQ_NbxHE....
+    // 3º - Header: Auth Basic cliente-id:client-secret & "Content-Type" = "application/x-www-form-urlencoded"
+    //      Body: "grant_type=authorization_code &code=$code"
+    // 4º - $token = response.token_access
+    // 5º - Para invocar un recurso:
+    //      Header: Bearer $Token....
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
@@ -145,10 +146,11 @@ public class AuthorizationServerConfig {
     @Bean
     public AuthorizationServerSettings authorizationServerSettings() {
         return AuthorizationServerSettings.builder()
-                .issuer(issuer)
+                .issuer(issuer) //Emisor
                 .build();
     }
 
+    // Devuelve el scope asociado a la cuenta de usuario
     @Bean
     @Profile("!test")
     public OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizerRoleByScope() {

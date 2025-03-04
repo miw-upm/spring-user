@@ -17,7 +17,6 @@ import java.util.Objects;
 
 @Service
 public class RestTestService {
-
     @Value("${miw.oauth2.api-client-id}")
     private String apiClientId;
     @Value("${miw.oauth2.api-client-secret}")
@@ -26,20 +25,21 @@ public class RestTestService {
     private final TestRestTemplate restTemplate = new TestRestTemplate();
 
     private String obtainAccessToken(String scope) {
-        String tokenUrl = "http://localhost:8080/oauth2/token";
-
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "client_credentials");
-        body.add("scope", scope);
+        String accessTokenUrl = "http://localhost:8080/oauth2/token";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         String auth = apiClientId + ":" + apiClientSecret;
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
         headers.add(HttpHeaders.AUTHORIZATION, "Basic " + encodedAuth);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "client_credentials");
+        body.add("scope", scope);
+
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
-        return Objects.requireNonNull(restTemplate.postForEntity(tokenUrl, request, Map.class).getBody())
+        return Objects.requireNonNull(restTemplate.postForEntity(accessTokenUrl, request, Map.class).getBody())
                 .get("access_token").toString();
     }
 

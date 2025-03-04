@@ -10,12 +10,7 @@ spring:
     default-property-inclusion: NON_NULL
   jpa:
     open-in-view: false
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8080
-          jwk-set-uri: http://localhost:8080/oauth2/jwks
+
 
 info:
   app:

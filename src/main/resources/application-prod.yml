@@ -1,12 +1,27 @@
 server:
   port: 8080
 
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
 spring:
   jpa:
     hibernate:
       ddl-auto: update
   datasource:
-    driverClassName: org.postgresqlDriver
+    driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/betca
     username: postgres
     password: postgres
+
+miw:
+  oauth2:
+    client-id: client-id
+    client-secret: client-secret
+    redirect-uri: http://localhost:8080/login/oauth2/code/cliente-oidc
+    issuer: http://localhost:8080
+    api-client-id: api-client-id
+    api-client-secret: api-client-secret
