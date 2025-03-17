@@ -17,12 +17,11 @@ import java.util.Objects;
 
 @Service
 public class RestTestService {
+    private final TestRestTemplate restTemplate = new TestRestTemplate();
     @Value("${miw.oauth2.api-client-id}")
     private String apiClientId;
     @Value("${miw.oauth2.api-client-secret}")
     private String apiClientSecret;
-
-    private final TestRestTemplate restTemplate = new TestRestTemplate();
 
     private String obtainAccessToken(String scope) {
         String accessTokenUrl = "http://localhost:8080/oauth2/token";

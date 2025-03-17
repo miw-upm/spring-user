@@ -1,16 +1,18 @@
 package es.upm.api.data.daos;
 
-import es.upm.api.TestConfig;
 import es.upm.api.data.entities.Scope;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
 import static es.upm.api.data.entities.Scope.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@TestConfig
+@SpringBootTest
+@ActiveProfiles("test")
 class UserDtoRepositoryIT {
 
     @Autowired
