@@ -41,15 +41,12 @@ public class UserService {
     }
 
     private List<Scope> authorizedScopes(Scope scope) {
-        if (Scope.ADMIN.equals(scope)) {
-            return List.of(Scope.ADMIN, Scope.MANAGER, Scope.OPERATOR, Scope.CUSTOMER);
-        } else if (Scope.MANAGER.equals(scope)) {
-            return List.of(Scope.MANAGER, Scope.OPERATOR, Scope.CUSTOMER);
-        } else if (Scope.OPERATOR.equals(scope)) {
-            return List.of(Scope.CUSTOMER);
-        } else {
-            return List.of();
-        }
+        return switch (scope) {
+            case ADMIN -> List.of(Scope.ADMIN, Scope.MANAGER, Scope.OPERATOR, Scope.CUSTOMER);
+            case MANAGER -> List.of(Scope.MANAGER, Scope.OPERATOR, Scope.CUSTOMER);
+            case OPERATOR -> List.of(Scope.CUSTOMER);
+            default -> List.of();
+        };
     }
 
     private void assertNoExistByMobile(String mobile) {

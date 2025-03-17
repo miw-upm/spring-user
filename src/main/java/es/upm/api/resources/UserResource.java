@@ -3,7 +3,6 @@ package es.upm.api.resources;
 import es.upm.api.data.entities.Scope;
 import es.upm.api.resources.view.UserDto;
 import es.upm.api.services.UserService;
-import es.upm.api.services.exceptions.BadRequestException;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.stream.Stream;
 
 @Log4j2
@@ -30,22 +28,14 @@ public class UserResource {
         this.userService = userService;
     }
 
-    @PreAuthorize("permitAll()")
-    @GetMapping("/debug-auth")
-    public String debugAuth(Principal principal) {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.info("Principal: {}", principal);
-        log.info("Authorities: {}", authentication.getAuthorities());
-        return "Check logs for authorities";
-    }
-
+    @PreAuthorize(Security.ALL)
     @PostMapping
     public void createUser(@Valid @RequestBody UserDto creationUserDto) {
         creationUserDto.doDefault();
         this.userService.createUser(creationUserDto.toUser(), this.extractRoleClaims());
     }
 
-    @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR + " or " + Security.CUSTOMER_OWNER)
+    @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR + Security.OR + Security.CUSTOMER_OWNER)
     @GetMapping(MOBILE_ID)
     public UserDto readUser(@PathVariable String mobile) {
         return new UserDto(this.userService.read(mobile));
@@ -77,7 +67,7 @@ public class UserResource {
                 .map(GrantedAuthority::getAuthority)
                 .findFirst()
                 .map(Scope::of)
-                .orElseThrow(() -> new BadRequestException("Don't has scope"));
+                .orElse(Scope.ANONYMOUS);
     }
 
 }

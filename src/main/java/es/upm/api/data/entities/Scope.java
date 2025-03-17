@@ -4,9 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum Scope {
-    ADMIN, MANAGER, OPERATOR, CUSTOMER, AUTHENTICATED;
+    ADMIN, MANAGER, OPERATOR, CUSTOMER, AUTHENTICATED, ANONYMOUS;
 
     public static final String PREFIX = "SCOPE_";
+    public static final String ROLE_PREFIX = "ROLE_";
 
     public static List<String> allValues() {
         return Arrays.stream(Scope.values())
@@ -15,7 +16,10 @@ public enum Scope {
     }
 
     public static Scope of(String withPrefix) {
-        return Scope.valueOf(withPrefix.replace(Scope.PREFIX, "").toUpperCase());
+        return Scope.valueOf(withPrefix
+                .replace(PREFIX, "")
+                .replace(ROLE_PREFIX, "")
+                .toUpperCase());
     }
 
     public String scopeValue() {
