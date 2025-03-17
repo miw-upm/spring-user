@@ -1,6 +1,5 @@
 package es.upm.api.resources;
 
-
 import es.upm.api.data.entities.Scope;
 import es.upm.api.resources.view.UserDto;
 import es.upm.api.services.UserService;
@@ -12,11 +11,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Stream;
 
 @Log4j2
-
 @PreAuthorize("hasAnyAuthority('SCOPE_admin', 'SCOPE_manager', 'SCOPE_operator')")
 @RestController
 @RequestMapping(UserResource.USERS)
@@ -32,12 +31,25 @@ public class UserResource {
         this.userService = userService;
     }
 
+    @PreAuthorize("permitAll()")
+    @GetMapping("/debug-auth")
+    public String debugAuth(Principal principal) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Principal: {}", principal);
+        log.info("Authorities: {}", authentication.getAuthorities());
+        return "Check logs for authorities";
+    }
+
     @PostMapping
     public void createUser(@Valid @RequestBody UserDto creationUserDto) {
         creationUserDto.doDefault();
         this.userService.createUser(creationUserDto.toUser(), this.extractRoleClaims());
     }
 
+    @PreAuthorize(
+            "hasAnyAuthority('SCOPE_admin', 'SCOPE_manager', 'SCOPE_operator')  or " +
+                    "(hasAuthority('SCOPE_customer') and #mobile == authentication.name)"
+    )
     @GetMapping(MOBILE_ID)
     public UserDto readUser(@PathVariable String mobile) {
         return new UserDto(this.userService.read(mobile));
