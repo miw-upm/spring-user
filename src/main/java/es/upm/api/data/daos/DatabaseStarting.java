@@ -5,7 +5,7 @@ import es.upm.api.data.entities.User;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -20,24 +20,28 @@ public class DatabaseStarting {
     private final String password;
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public DatabaseStarting(
             UserRepository userRepository,
             @Value("${miw.admin}") String admin,
             @Value("${miw.mobile}") String mobile,
-            @Value("${miw.password}") String password) {
+            @Value("${miw.password}") String password,
+            PasswordEncoder passwordEncoder
+    ) {
         this.userRepository = userRepository;
         this.admin = admin;
         this.mobile = mobile;
         this.password = password;
+        this.passwordEncoder = passwordEncoder;
         this.initialize();
     }
 
     public void initialize() {
         if (this.userRepository.findByScopeIn(List.of(Scope.ADMIN)).isEmpty()) {
             User user = User.builder().mobile(this.mobile).firstName(this.admin)
-                    .password(new BCryptPasswordEncoder().encode(this.password))
+                    .password(this.passwordEncoder.encode(this.password))
                     .scope(Scope.ADMIN).registrationDate(LocalDateTime.now()).active(true).build();
             this.userRepository.save(user);
             log.warn("------- Created Admin -----------");
