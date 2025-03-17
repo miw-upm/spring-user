@@ -38,7 +38,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Configuration
-public class AuthorizationServerConfig {
+public class AuthorizationServerConfig {  // Generate tokens OAuth2
 
     private final PasswordEncoder passwordEncoder;
     private final String clientId;
@@ -87,6 +87,7 @@ public class AuthorizationServerConfig {
                 .accessTokenTimeToLive(Duration.ofMinutes(60))
                 .refreshTokenTimeToLive(Duration.ofDays(30))
                 .build();
+
         RegisteredClient userClient =
                 RegisteredClient.withId(UUID.randomUUID().toString())
                         .clientId(clientId)
@@ -98,6 +99,7 @@ public class AuthorizationServerConfig {
                         .scopes(scopes -> scopes.addAll(Scope.allValues()))
                         .tokenSettings(tokenSettings)
                         .build();
+
         RegisteredClient apiClient =
                 RegisteredClient.withId(UUID.randomUUID().toString())
                         .clientId(apiClientId)
@@ -107,7 +109,8 @@ public class AuthorizationServerConfig {
                         .scopes(scopes -> scopes.addAll(Scope.allValues()))
                         .tokenSettings(tokenSettings)
                         .build();
-        return new InMemoryRegisteredClientRepository(userClient,apiClient);
+
+        return new InMemoryRegisteredClientRepository(userClient, apiClient);
     }
 
     // AUTHORIZATION_CODE
