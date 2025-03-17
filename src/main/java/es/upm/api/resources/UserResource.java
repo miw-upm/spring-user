@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 @Log4j2
 
-@PreAuthorize("hasAnyAuthority('admin','SCOPE_admin', 'SCOPE_manager', 'SCOPE_operator')")
+@PreAuthorize("hasAnyAuthority('SCOPE_admin', 'SCOPE_manager', 'SCOPE_operator')")
 @RestController
 @RequestMapping(UserResource.USERS)
 public class UserResource {
