@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -21,10 +22,10 @@ public class SeederForDevelopment {
     private final UserRepository userRepository;
 
     @Autowired
-    public SeederForDevelopment(UserRepository userRepository, DatabaseStarting databaseStarting, @Value("${miw.password}") String password) {
+    public SeederForDevelopment(UserRepository userRepository, DatabaseStarting databaseStarting, @Value("${miw.password}") String password, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.databaseStarting = databaseStarting;
-        this.pass = new BCryptPasswordEncoder().encode(password);
+        this.pass = passwordEncoder.encode(password);
         this.deleteAllAndInitializeAndSeedDataBase();
     }
 

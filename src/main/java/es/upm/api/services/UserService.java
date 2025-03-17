@@ -8,6 +8,7 @@ import es.upm.api.services.exceptions.ForbiddenException;
 import es.upm.api.services.exceptions.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,10 +19,12 @@ import java.util.stream.Stream;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public void createUser(User user, Scope scope) {
@@ -29,7 +32,7 @@ public class UserService {
             throw new ForbiddenException("Insufficient role to create this userDto: " + user);
         }
         this.assertNoExistByMobile(user.getMobile());
-        user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
+        user.setPassword(this.passwordEncoder.encode(user.getPassword()));
         user.setRegistrationDate(LocalDateTime.now());
         this.userRepository.save(user);
     }
