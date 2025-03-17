@@ -3,6 +3,7 @@ package es.upm.api.resources;
 import es.upm.api.data.entities.Scope;
 import es.upm.api.resources.view.UserDto;
 import es.upm.api.services.UserService;
+import es.upm.api.services.exceptions.BadRequestException;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,16 +13,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
 import java.util.stream.Stream;
 
 @Log4j2
-@PreAuthorize("hasAnyAuthority('SCOPE_admin', 'SCOPE_manager', 'SCOPE_operator')")
+@PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
 @RestController
 @RequestMapping(UserResource.USERS)
 public class UserResource {
     public static final String USERS = "/users";
-    public static final String TOKEN = "/token";
     public static final String MOBILE_ID = "/{mobile}";
     public static final String SEARCH = "/search";
     private final UserService userService;
@@ -46,10 +45,7 @@ public class UserResource {
         this.userService.createUser(creationUserDto.toUser(), this.extractRoleClaims());
     }
 
-    @PreAuthorize(
-            "hasAnyAuthority('SCOPE_admin', 'SCOPE_manager', 'SCOPE_operator')  or " +
-                    "(hasAuthority('SCOPE_customer') and #mobile == authentication.name)"
-    )
+    @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR + " or " + Security.CUSTOMER_OWNER)
     @GetMapping(MOBILE_ID)
     public UserDto readUser(@PathVariable String mobile) {
         return new UserDto(this.userService.read(mobile));
@@ -77,9 +73,11 @@ public class UserResource {
     }
 
     private Scope extractRoleClaims() {
-        List<String> roleClaims = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority).toList();
-        return Scope.of(roleClaims.getFirst());
+        return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .map(Scope::of)
+                .orElseThrow(() -> new BadRequestException("Don't has scope"));
     }
 
 }
