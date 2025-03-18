@@ -20,11 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Log4j2
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-class UserResourceFunctionalTest {
+class UserResourceFT {
     private final HttpRequestBuilder httpRequestBuilder;
 
     @Autowired
-    UserResourceFunctionalTest(@Value("${miw.oauth2.api-client-id}") String apiClientId, @Value("${miw.oauth2.api-client-secret}") String apiClientSecret, TestRestTemplate testRestTemplate) {
+    UserResourceFT(@Value("${miw.oauth2.api-client-id}") String apiClientId, @Value("${miw.oauth2.api-client-secret}") String apiClientSecret, TestRestTemplate testRestTemplate) {
         this.httpRequestBuilder = HttpRequestBuilder.create(testRestTemplate, apiClientId, apiClientSecret);
     }
 
