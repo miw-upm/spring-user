@@ -19,8 +19,7 @@ class SystemResourceFunctionalTest {
 
     @Test
     void testReadBadge() {
-        String url = SystemResource.VERSION_BADGE;
-        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+        ResponseEntity<String> response = restTemplate.getForEntity(SystemResource.VERSION_BADGE, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(OK);
         assertThat(response.getBody())
