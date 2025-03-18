@@ -17,16 +17,6 @@ spring:
           issuer-uri: http://localhost:8080
           jwk-set-uri: http://localhost:8080/oauth2/jwks
 
-
-miw:
-  oauth2:
-    client-id: client-id
-    client-secret: client-secret
-    redirect-uri: http://localhost:8080/login/oauth2/code/cliente-oidc
-    issuer: http://localhost:8080
-    api-client-id: api-client-id
-    api-client-secret: api-client-secret
-
 springdoc:
   swagger-ui:
     oauth2RedirectUrl: http://localhost:8080/login/oauth2/code/cliente-oidc

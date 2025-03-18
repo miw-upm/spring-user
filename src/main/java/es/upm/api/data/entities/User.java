@@ -1,12 +1,10 @@
 package es.upm.api.data.entities;
 
-import es.upm.api.resources.view.UserDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDateTime;
 
@@ -32,14 +30,4 @@ public class User {
     private Scope scope;
     private LocalDateTime registrationDate;
     private Boolean active;
-
-    public User(UserDto userDto) {
-        BeanUtils.copyProperties(userDto, this);
-    }
-
-    public UserDto toUser() {
-        UserDto userDto = new UserDto();
-        BeanUtils.copyProperties(this, userDto);
-        return userDto;
-    }
 }

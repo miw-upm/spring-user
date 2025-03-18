@@ -41,7 +41,6 @@ public class UserResource {
         return new UserDto(this.userService.read(mobile));
     }
 
-
     @GetMapping
     public Stream<UserDto> readAll() {
         return this.userService.readAll(this.extractRoleClaims())

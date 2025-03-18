@@ -33,5 +33,4 @@ public class SystemResource {
         return new Badge().generateBadge("Render", "v" + version).getBytes();
     }
 
-
 }

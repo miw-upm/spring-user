@@ -1,6 +1,10 @@
 spring:
+  application:
+    name: spring-user
   profiles:
+  # Profile ----------------------------------------
     active: dev
+  # ------------------------------------------------
   output:
     ansi:
       enabled: ALWAYS
@@ -10,7 +14,6 @@ spring:
     default-property-inclusion: NON_NULL
   jpa:
     open-in-view: false
-
 
 info:
   app:
@@ -36,4 +39,10 @@ miw:
   admin: admin
   mobile: 6
   password: 6
-
+  oauth2:
+    client-id: client-id
+    client-secret: client-secret
+    redirect-uri: http://localhost:8080/login/oauth2/code/cliente-oidc
+    issuer: http://localhost:8080
+    api-client-id: api-client-id
+    api-client-secret: api-client-secret

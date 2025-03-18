@@ -4,18 +4,8 @@ logging:
     es.upm: DEBUG
     org.springframework.security: WARN
 
-
 # H2 Embedded
 spring:
   datasource:
     driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:testdb
-
-miw:
-  oauth2:
-    client-id: client-id
-    client-secret: client-secret
-    redirect-uri: http://localhost:8080/login/oauth2/code/cliente-oidc
-    issuer: http://localhost:8080
-    api-client-id: api-client-id
-    api-client-secret: api-client-secret

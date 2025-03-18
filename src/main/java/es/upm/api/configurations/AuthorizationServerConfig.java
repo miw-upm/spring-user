@@ -68,7 +68,6 @@ public class AuthorizationServerConfig {  // Generate tokens OAuth2
 
     @Bean
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
-
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
                 OAuth2AuthorizationServerConfigurer.authorizationServer();
         authorizationServerConfigurer.oidc(Customizer.withDefaults()); //.well-known/openid-configuration

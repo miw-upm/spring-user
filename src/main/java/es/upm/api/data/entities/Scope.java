@@ -30,5 +30,4 @@ public enum Scope {
         return this.name().toLowerCase();
     }
 
-
 }

@@ -38,12 +38,11 @@ public class ResourceServerConfig {  // validate tokens y security APIs con SCOP
         grantedAuthoritiesConverter.setAuthoritiesClaimName("scope");
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            if (jwt.getClaim("scope") != null) {
+            if (jwt.getClaim("scope") != null) { // standard Auth2
                 return grantedAuthoritiesConverter.convert(jwt);
             } else {
-                return Optional.ofNullable(jwt.getClaimAsStringList("cognito:groups"))
+                return Optional.ofNullable(jwt.getClaimAsStringList("cognito:groups"))// AWS cognito: group as scope
                         .orElse(Collections.emptyList())
                         .stream()
                         .map(group -> new SimpleGrantedAuthority(Scope.PREFIX + group))
@@ -51,7 +50,6 @@ public class ResourceServerConfig {  // validate tokens y security APIs con SCOP
             }
 
         });
-
         return jwtAuthenticationConverter;
     }
 
